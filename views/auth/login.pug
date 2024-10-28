@@ -1,0 +1,175 @@
+extends ../layout
+
+block content
+  .min-vh-100.d-flex.align-items-center.py-5(style="background-color: #f8f9fa")
+    .container
+      .row.justify-content-center
+        .col-md-8.col-lg-6.col-xl-5
+          // Logo ve Başlık
+          .text-center.mb-4
+            .display-6.fw-bold.text-primary.mb-2
+              i.fas.fa-store.me-2
+              | E-Ticaret
+            p.text-muted Hesabınıza giriş yapın
+
+          // Login Card
+          .card.border-0.shadow-sm
+            .card-body.p-4
+              if error
+                .alert.alert-danger.d-flex.align-items-center.fade.show
+                  i.fas.fa-exclamation-circle.me-2
+                  = error
+
+              form(action="/user/login" method="POST")
+                // Email Input
+                .form-floating.mb-3
+                  input#email.form-control(
+                    type="email"
+                    name="email"
+                    placeholder="name@example.com"
+                    required
+                    autofocus
+                  )
+                  label(for="email")
+                    i.fas.fa-envelope.me-2.text-muted
+                    | E-posta Adresi
+
+                // Password Input
+                .form-floating.mb-3
+                  input#password.form-control(
+                    type="password"
+                    name="password"
+                    placeholder="Şifre"
+                    required
+                  )
+                  label(for="password")
+                    i.fas.fa-lock.me-2.text-muted
+                    | Şifre
+                  #passwordToggle.position-absolute.end-0.top-50.translate-middle-y.pe-3(
+                    style="cursor: pointer;"
+                  )
+                    i.fas.fa-eye-slash.text-muted
+
+                // Remember Me & Forgot Password
+                .d-flex.justify-content-between.align-items-center.mb-4
+                  .form-check
+                    input#rememberMe.form-check-input(
+                      type="checkbox"
+                      name="remember"
+                    )
+                    label.form-check-label.text-muted(for="rememberMe")
+                      | Beni Hatırla
+                  a.text-decoration-none.small(href="/user/forgot-password")
+                    | Şifremi Unuttum
+
+                // Login Button
+                button.btn.btn-primary.w-100.py-2.mb-4(type="submit")
+                  i.fas.fa-sign-in-alt.me-2
+                  | Giriş Yap
+
+                // Social Login
+                .text-center
+                  p.text-muted.mb-4 Veya şununla giriş yap:
+                  .d-flex.justify-content-center.gap-2
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialLogin('google')"
+                    )
+                      i.fab.fa-google
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialLogin('facebook')"
+                    )
+                      i.fab.fa-facebook-f
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialLogin('apple')"
+                    )
+                      i.fab.fa-apple
+
+          // Register Link
+          .text-center.mt-4
+            p.text-muted.mb-0
+              | Hesabınız yok mu? 
+              a.text-decoration-none.fw-medium(href="/user/register")
+                | Hemen Kayıt Olun
+
+  style.
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+      height: calc(3.5rem + 2px);
+      line-height: 1.25;
+    }
+    
+    .form-floating > label {
+      padding: 1rem 0.75rem;
+    }
+    
+    .btn-outline-primary {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .card {
+      border-radius: 1rem;
+    }
+    
+    .alert {
+      border-radius: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1rem;
+      }
+    }
+
+  script.
+    // Password visibility toggle
+    document.getElementById('passwordToggle')?.addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      const icon = this.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      let isValid = true;
+
+      if (!email.value.match(/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/)) {
+        email.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        email.classList.remove('is-invalid');
+      }
+
+      if (password.value.length < 6) {
+        password.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        password.classList.remove('is-invalid');
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+
+    // Social login handler
+    function socialLogin(provider) {
+      // Implement social login logic here
+      console.log(`Logging in with ${provider}`);
+    }

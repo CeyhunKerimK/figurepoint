@@ -1,0 +1,195 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    // Header Section
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h2.mb-0
+        i.fas.fa-users.me-2
+        | Müşteri Listesi
+      button.btn.btn-primary(onclick="window.location.href='/user/create'")
+        i.fas.fa-plus.me-2
+        | Yeni Müşteri
+    
+    // Main Card
+    .card.border-0.shadow-sm
+      .card-body
+        .table-responsive
+          table#customersTable.table.table-hover.align-middle
+            thead.bg-light
+              tr
+                th.text-center Resim
+                th ID
+                th Ad
+                th.d-none.d-md-table-cell E-posta
+                th.d-none.d-md-table-cell Telefon
+                th.d-none.d-md-table-cell Şehir
+                th.text-end İşlemler
+            tbody
+              each customer in customers
+                tr
+                  td.text-center(style="width: 80px;")
+                    if customer.image_url
+                      img.rounded-circle.border(
+                        src=customer.image_url
+                        alt=customer.name
+                        style="width: 40px; height: 40px; object-fit: cover;"
+                      )
+                    else
+                      .rounded-circle.bg-light.d-flex.align-items-center.justify-content-center.mx-auto(
+                        style="width: 40px; height: 40px;"
+                      )
+                        i.fas.fa-user.text-secondary
+                  td
+                    small.text-muted #
+                    span.ms-1= customer.id
+                  td
+                    .fw-medium= customer.name
+                    .d-md-none
+                      small.text-muted= customer.email
+                  td.d-none.d-md-table-cell= customer.email
+                  td.d-none.d-md-table-cell
+                    if customer.phone
+                      i.fas.fa-phone.text-muted.me-1
+                      = customer.phone
+                  td.d-none.d-md-table-cell
+                    if customer.city
+                      i.fas.fa-map-marker-alt.text-muted.me-1
+                      = customer.city
+                  td
+                    .d-flex.justify-content-end.gap-2
+                      button.btn.btn-light.btn-sm(
+                        onclick=`viewCustomer('${customer.id}')`
+                        data-bs-toggle="tooltip"
+                        title="Detay"
+                      )
+                        i.fas.fa-eye
+                      button.btn.btn-light.btn-sm(
+                        onclick=`editCustomer('${customer.id}')`
+                        data-bs-toggle="tooltip"
+                        title="Düzenle"
+                      )
+                        i.fas.fa-edit
+                      button.btn.btn-light.btn-sm.delete-customer(
+                        data-id=customer.id
+                        data-bs-toggle="tooltip"
+                        title="Sil"
+                      )
+                        i.fas.fa-trash.text-danger
+
+  style.
+    .table > :not(caption) > * > * {
+      padding: 1rem 0.75rem;
+    }
+    
+    .btn-light {
+      background: #f8f9fa;
+      border-color: #f8f9fa;
+    }
+    
+    .btn-light:hover {
+      background: #e9ecef;
+      border-color: #e9ecef;
+    }
+    
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+      border: 1px solid #dee2e6;
+      border-radius: 0.375rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+      padding-right: 2rem;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      padding: 0.375rem 0.75rem;
+      margin: 0 0.2rem;
+      border-radius: 0.375rem;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: #0d6efd;
+      border-color: #0d6efd;
+      color: white !important;
+    }
+
+  script.
+    $(document).ready(function() {
+      // DataTables initialization
+      const table = $('#customersTable').DataTable({
+        language: {
+          url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json"
+        },
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+        columnDefs: [
+          { orderable: false, targets: [0, 6] }
+        ],
+        order: [[2, 'asc']],  // Ad sütununa göre sırala
+        responsive: true,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
+        pageLength: 25
+      });
+
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      });
+
+      // Delete customer handler
+      $('.delete-customer').on('click', function() {
+        const button = $(this);
+        const customerId = button.data('id');
+        
+        Swal.fire({
+          title: 'Emin misiniz?',
+          text: "Bu müşteriyi silmek istediğinizden emin misiniz?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Evet, Sil',
+          cancelButtonText: 'İptal'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/user/${customerId}/delete`, { 
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                Swal.fire(
+                  'Silindi!',
+                  'Müşteri başarıyla silindi.',
+                  'success'
+                ).then(() => {
+                  table.row(button.parents('tr')).remove().draw();
+                });
+              } else {
+                throw new Error(data.message || 'Bir hata oluştu');
+              }
+            })
+            .catch(error => {
+              Swal.fire(
+                'Hata!',
+                error.message,
+                'error'
+              );
+            });
+          }
+        });
+      });
+    });
+
+    function viewCustomer(id) {
+      window.location.href = `/user/${id}`;
+    }
+
+    function editCustomer(id) {
+      window.location.href = `/user/${id}/edit`;
+    }

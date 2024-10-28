@@ -1,0 +1,132 @@
+extends ../../layout
+
+block content
+  .container.py-4
+    .row.justify-content-center
+      .col-lg-10
+        nav(aria-label="breadcrumb")
+          ol.breadcrumb.bg-transparent.p-0
+            li.breadcrumb-item
+              a.text-decoration-none(href="/dashboard") Dashboard
+            li.breadcrumb-item
+              a.text-decoration-none(href="/user/list") Müşteriler
+            li.breadcrumb-item.active Müşteri Detayı
+
+        .card.border-0.shadow-sm
+          .card-header.bg-white.border-0.py-3
+            .d-flex.justify-content-between.align-items-center
+              h4.mb-0 Müşteri Bilgileri
+              .btn-group
+                a.btn.btn-outline-primary.btn-sm(href=`/user/${customer.id}/edit`)
+                  i.fas.fa-edit.me-2
+                  | Düzenle
+                button.btn.btn-outline-danger.btn-sm(onclick=`deleteCustomer('${customer.id}')`)
+                  i.fas.fa-trash.me-2
+                  | Sil
+          
+          .card-body
+            .row
+              .col-md-4.text-center.mb-4.mb-md-0
+                .position-relative.mb-3
+                  if customer.image_url
+                    img.img-thumbnail.rounded-circle.shadow-sm(
+                      src=customer.image_url,
+                      alt=customer.name,
+                      style="width: 200px; height: 200px; object-fit: cover;"
+                    )
+                  else
+                    .rounded-circle.bg-light.d-flex.align-items-center.justify-content-center.mx-auto(
+                      style="width: 200px; height: 200px;"
+                    )
+                      i.fas.fa-user.fa-4x.text-secondary
+                
+                h3.mb-1= customer.name
+                p.text-muted.mb-3
+                  i.fas.fa-envelope.me-2
+                  = customer.email
+                p.text-muted
+                  i.fas.fa-phone.me-2
+                  = customer.phone
+
+              .col-md-8
+                .card.border-0.bg-light
+                  .card-body
+                    .row.g-4
+                      .col-12
+                        h5.mb-3
+                          i.fas.fa-info-circle.me-2
+                          | Kişisel Bilgiler
+                        .row
+                          .col-sm-6.mb-3
+                            .detail-item
+                              label.text-muted.d-block.small Doğum Tarihi
+                              .fw-medium
+                                i.fas.fa-calendar.me-2.text-primary
+                                - var birthDate = new Date(customer.date_of_birth)
+                                = birthDate.toLocaleDateString()
+                          .col-sm-6.mb-3
+                            .detail-item
+                              label.text-muted.d-block.small Cinsiyet
+                              .fw-medium
+                                i.fas.fa-venus-mars.me-2.text-primary
+                                = customer.gender
+
+                      .col-12
+                        h5.mb-3
+                          i.fas.fa-map-marker-alt.me-2
+                          | Adres Bilgileri
+                        .address-card.bg-white.p-3.rounded
+                          p.mb-2= customer.address
+                          .row
+                            .col-sm-4.mb-2
+                              label.text-muted.d-block.small Şehir
+                              .fw-medium= customer.city
+                            .col-sm-4.mb-2
+                              label.text-muted.d-block.small Ülke
+                              .fw-medium= customer.country
+                            .col-sm-4.mb-2
+                              label.text-muted.d-block.small Posta Kodu
+                              .fw-medium= customer.postal_code
+
+        .text-center.mt-4
+          a.btn.btn-outline-secondary(href='/user/list')
+            i.fas.fa-arrow-left.me-2
+            | Müşteri Listesine Dön
+
+  style.
+    .detail-item {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      height: 100%;
+    }
+    
+    .address-card {
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+      color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+      .card-header {
+        text-align: center;
+      }
+      
+      .btn-group {
+        margin-top: 1rem;
+        width: 100%;
+      }
+      
+      .btn-group .btn {
+        flex: 1;
+      }
+    }
+
+  script.
+    function deleteCustomer(customerId) {
+      if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+        window.location.href = `/user/${customerId}/delete`;
+      }
+    }

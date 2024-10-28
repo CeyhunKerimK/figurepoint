@@ -1,0 +1,240 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    // Header
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h2.mb-0.fw-bold
+        i.fas.fa-box.me-2.text-primary
+        | Ürün Listesi
+      .d-flex.gap-2
+        .dropdown
+          button.btn.btn-light.dropdown-toggle(type="button" data-bs-toggle="dropdown")
+            i.fas.fa-sort.me-2
+            | Sırala
+          ul.dropdown-menu.dropdown-menu-end
+            li
+              a.dropdown-item(href="#") Fiyat (Düşükten Yükseğe)
+            li
+              a.dropdown-item(href="#") Fiyat (Yüksekten Düşüğe)
+            li
+              a.dropdown-item(href="#") En Yeni
+            li
+              a.dropdown-item(href="#") En Çok Satan
+        a.btn.btn-primary(href="/product/create")
+          i.fas.fa-plus.me-2
+          | Yeni Ürün
+
+    // Product Grid
+    .row.g-4
+      each product in products
+        .col-sm-6.col-md-4.col-xl-3
+          .card.h-100.border-0.shadow-sm.product-card
+            // Image Section
+            .card-img-position.position-relative
+              .image-wrapper.rounded-top(style="height: 250px; overflow: hidden;")
+                if product.image_url
+                  img.card-img-top(
+                    src=product.image_url
+                    alt=product.name
+                    style="height: 100%; object-fit: cover;"
+                  )
+                else
+                  .d-flex.align-items-center.justify-content-center.h-100.bg-light
+                    i.fas.fa-image.fa-2x.text-muted
+              
+              // Badges
+              if product.is_on_sale
+                .position-absolute.top-0.start-0.m-3
+                  .badge.bg-danger.rounded-pill.p-2
+                    i.fas.fa-tag.me-1
+                    | %#{product.discount_percent} İndirim
+              
+              // Quick Actions
+              .position-absolute.top-0.end-0.m-3
+                .btn-group.shadow-sm
+                  button.btn.btn-light.btn-sm.like-btn(
+                    onclick=`likeProduct(${product.id}, true)`
+                    data-bs-toggle="tooltip"
+                    title="Beğen"
+                  )
+                    i.fas.fa-thumbs-up
+                    span.ms-1.badge.bg-primary #{product.likes}
+                  button.btn.btn-light.btn-sm.wishlist-btn(
+                    onclick=`toggleWishlist(${product.id})`
+                    data-bs-toggle="tooltip"
+                    title="İstek Listesine Ekle"
+                  )
+                    i.fas.fa-heart
+            
+            // Content Section
+            .card-body.p-3
+              // Title & Description
+              h5.card-title.mb-2.text-truncate= product.name
+              p.card-text.small.text-muted.mb-3
+                = product.description.substring(0, 100) + (product.description.length > 100 ? '...' : '')
+              
+              // Price Section
+              .mb-3
+                if product.is_on_sale
+                  .d-flex.align-items-center.gap-2
+                    del.text-muted #{product.price} TL
+                    .h5.mb-0.text-danger #{(product.price * (1 - product.discount_percent / 100)).toFixed(2)} TL
+                else
+                  .h5.mb-0.text-primary #{product.price} TL
+              
+              // Stock & Seller Info
+              .d-flex.justify-content-between.align-items-center.mb-3
+                span.badge.bg-success.rounded-pill
+                  i.fas.fa-box.me-1
+                  | #{product.stock} adet
+                small.text-muted
+                  | Satıcı: 
+                  if product.seller
+                    a.text-decoration-none(href=`/seller/${product.seller.id}`)= product.seller.name
+                  else
+                    | Bilinmiyor
+              
+              // Action Buttons
+              .d-flex.gap-2
+                a.btn.btn-outline-primary.w-100(href=`/product/${product.id}`) 
+                  i.fas.fa-info-circle.me-1
+                  | Detay
+                .btn-group
+                  a.btn.btn-light(
+                    href=`/product/${product.id}/edit`
+                    data-bs-toggle="tooltip"
+                    title="Düzenle"
+                  )
+                    i.fas.fa-edit
+                  button.btn.btn-light(
+                    onclick=`deleteProduct(${product.id})`
+                    data-bs-toggle="tooltip"
+                    title="Sil"
+                  )
+                    i.fas.fa-trash-alt.text-danger
+
+  style.
+    .product-card {
+      transition: all 0.3s ease;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    
+    .image-wrapper img {
+      transition: transform 0.3s ease;
+    }
+    
+    .product-card:hover .image-wrapper img {
+      transform: scale(1.05);
+    }
+    
+    .btn-light {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(5px);
+    }
+    
+    .like-btn.active, .wishlist-btn.active {
+      background-color: #4e73df;
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .btn-group .btn {
+        padding: 0.375rem 0.5rem;
+      }
+    }
+
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      });
+
+      // Image preview modal
+      const modalImage = document.getElementById('modalImage');
+      const imageWrappers = document.querySelectorAll('.image-wrapper');
+      
+      imageWrappers.forEach(wrapper => {
+        wrapper.addEventListener('click', function() {
+          const img = this.querySelector('img');
+          if (img) {
+            modalImage.src = img.src;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+          }
+        });
+      });
+    });
+
+    function likeProduct(productId, isLike) {
+      fetch(`/api/product/${productId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isLike })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          const btn = document.querySelector(`[onclick="likeProduct(${productId}, true)"]`);
+          if (btn) {
+            const badge = btn.querySelector('.badge');
+            badge.textContent = data.likes;
+            btn.classList.toggle('active');
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Hata!', 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+      });
+    }
+
+    function toggleWishlist(productId) {
+      fetch(`/api/product/${productId}/wishlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          const btn = document.querySelector(`[onclick="toggleWishlist(${productId})"]`);
+          if (btn) {
+            btn.classList.toggle('active');
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Hata!', 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+      });
+    }
+
+    function deleteProduct(productId) {
+      Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ürünü silmek istediğinizden emin misiniz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = `/product/${productId}/delete`;
+        }
+      });
+    }

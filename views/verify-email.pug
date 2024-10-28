@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-body
+            if success
+              h2.card-title.text-success E-posta Doğrulandı
+              p.card-text= message
+              a.btn.btn-primary(href="/login") Giriş Yap
+            else
+              h2.card-title.text-danger Doğrulama Başarısız
+              p.card-text= message
+              a.btn.btn-primary(href="/") Ana Sayfa

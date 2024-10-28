@@ -1,0 +1,85 @@
+extends layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-body
+<<<<<<< HEAD
+            h2.card-title.text-primary E-posta Doğrulama İşlemi
+            #status-message
+              p.card-text Doğrulama işlemi devam ediyor, lütfen bekleyin...
+            .progress.mb-3
+              #progress-bar.progress-bar.progress-bar-striped.progress-bar-animated(role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100")
+            #action-buttons.text-center.mt-3(style="display: none;")
+              a#login-button.btn.btn-primary.mr-2(href="/login" style="display: none;") Giriş Yap
+              a#home-button.btn.btn-secondary(href="/" style="display: none;") Ana Sayfa
+            #resend-form.mt-3(style="display: none;")
+              p.card-text Yeni bir doğrulama e-postası göndermek ister misiniz?
+              form(action="/resend-verification" method="POST")
+                input(type="hidden" name="email" value=email)
+                button.btn.btn-primary(type="submit") Yeniden Gönder
+
+
+  script.
+    let progress = 0;
+    const progressBar = document.getElementById('progress-bar');
+    const statusMessage = document.getElementById('status-message');
+    const actionButtons = document.getElementById('action-buttons');
+    const loginButton = document.getElementById('login-button');
+    const homeButton = document.getElementById('home-button');
+    const resendForm = document.getElementById('resend-form');
+
+    function updateProgress() {
+      if (progress < 100) {
+        progress += 10;
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        setTimeout(updateProgress, 500);
+      } else {
+        checkVerificationStatus();
+      }
+    }
+
+    function checkVerificationStatus() {
+      fetch('/verify-email-status/' + '#{token}')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            statusMessage.innerHTML = '<p class="card-text text-success">' + data.message + '</p>';
+            loginButton.style.display = 'inline-block';
+          } else {
+            statusMessage.innerHTML = '<p class="card-text text-danger">' + data.message + '</p>';
+            homeButton.style.display = 'inline-block';
+            if (data.expired) {
+              resendForm.style.display = 'block';
+            }
+          }
+          actionButtons.style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          statusMessage.innerHTML = '<p class="card-text text-danger">Bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>';
+          homeButton.style.display = 'inline-block';
+          actionButtons.style.display = 'block';
+        });
+    }
+
+    updateProgress();
+=======
+            if success
+              h2.card-title.text-success E-posta Doğrulandı
+              p.card-text= message
+              a.btn.btn-primary(href="/login") Giriş Yap
+            else
+              h2.card-title.text-danger Doğrulama Başarısız
+              p.card-text= message
+              if expired
+                p.card-text Yeni bir doğrulama e-postası göndermek ister misiniz?
+                form(action="/resend-verification" method="POST")
+                  input(type="hidden" name="email" value=email)
+                  button.btn.btn-primary(type="submit") Yeniden Gönder
+              else
+                a.btn.btn-primary(href="/") Ana Sayfa
+>>>>>>> 4744ea1d3fa26aaf1127e144bbef4f7e77fe56c5

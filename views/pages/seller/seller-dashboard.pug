@@ -1,0 +1,176 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    .row.mb-4
+      .col-12
+        .d-flex.justify-content-between.align-items-center
+          h2.mb-0 Satıcı Paneli
+          button.btn.btn-primary.d-md-none#toggleSidebar
+            i.fas.fa-bars
+    
+    .row
+      // Sidebar
+      .col-md-3.mb-4
+        .card.shadow-sm.sticky-top(style="top: 1rem; z-index: 1000")
+          .card-body.p-0
+            .list-group.list-group-flush
+              a.list-group-item.list-group-item-action.d-flex.align-items-center.py-3(href="#products")
+                i.fas.fa-box.me-3
+                span Ürünlerim
+              a.list-group-item.list-group-item-action.d-flex.align-items-center.py-3(href="#orders")
+                i.fas.fa-shopping-cart.me-3
+                span Siparişler
+              a.list-group-item.list-group-item-action.d-flex.align-items-center.py-3(href="#analytics")
+                i.fas.fa-chart-line.me-3
+                span Analitik
+      
+      // Main Content
+      .col-md-9
+        // Products Section
+        #products.card.shadow-sm.mb-4
+          .card-header.bg-white.py-3
+            .d-flex.justify-content-between.align-items-center
+              h5.mb-0 Ürünlerim
+              a.btn.btn-primary.btn-sm(href="/product/create")
+                i.fas.fa-plus.me-2
+                span Yeni Ürün Ekle
+          
+          .card-body
+            .table-responsive
+              table.table.table-hover.align-middle
+                thead.table-light
+                  tr
+                    th Ürün Adı
+                    th.text-end Fiyat
+                    th.text-center Stok
+                    th.text-end İşlemler
+                tbody
+                  each product in products
+                    tr
+                      td
+                        .d-flex.align-items-center
+                          if product.image
+                            img.rounded.me-2(src=product.image width="40" height="40" alt=product.name)
+                          .fw-medium= product.name
+                      td.text-end= product.price + ' ₺'
+                      td.text-center
+                        span(class=product.stock > 0 ? 'badge bg-success' : 'badge bg-danger')
+                          = product.stock
+                      td
+                        .d-flex.justify-content-end.gap-2
+                          a.btn.btn-sm.btn-outline-primary(href=`/product/${product.id}/edit`)
+                            i.fas.fa-edit
+                          button.btn.btn-sm.btn-outline-danger(onclick=`deleteProduct('${product.id}')`)
+                            i.fas.fa-trash
+        
+        // Orders Section
+        #orders.card.shadow-sm.mb-4
+          .card-header.bg-white.py-3
+            h5.mb-0 Siparişler
+          
+          .card-body
+            .table-responsive
+              table.table.table-hover.align-middle
+                thead.table-light
+                  tr
+                    th.text-nowrap Sipariş ID
+                    th.text-nowrap Müşteri
+                    th.text-end Tutar
+                    th.text-center Durum
+                    th.text-end İşlemler
+                tbody
+                  each order in orders
+                    tr
+                      td.text-nowrap
+                        small.text-muted #
+                        span.ms-1.fw-medium= order.id
+                      td.text-nowrap= order.user_name
+                      td.text-end.fw-medium= order.total_amount + ' ₺'
+                      td.text-center
+                        span(class=`badge bg-${getStatusColor(order.status)}`)= order.status
+                      td.text-end
+                        a.btn.btn-sm.btn-outline-primary(href=`/order/${order.id}`)
+                          i.fas.fa-eye.me-1
+                          span.d-none.d-md-inline Detay
+        
+        // Analytics Section
+        #analytics.card.shadow-sm
+          .card-header.bg-white.py-3
+            h5.mb-0 Analitik
+          
+          .card-body
+            .row.g-4
+              .col-md-4
+                .card.border-0.bg-light
+                  .card-body.text-center
+                    .display-6.text-primary.mb-2
+                      i.fas.fa-coins
+                    h6.text-muted Toplam Satış
+                    h3.mb-0= totalSales + ' ₺'
+              
+              .col-md-4
+                .card.border-0.bg-light
+                  .card-body.text-center
+                    .display-6.text-success.mb-2
+                      i.fas.fa-chart-bar
+                    h6.text-muted Bu Ay Satışlar
+                    h3.mb-0= monthlySales + ' ₺'
+              
+              .col-md-4
+                .card.border-0.bg-light
+                  .card-body.text-center
+                    .display-6.text-warning.mb-2
+                      i.fas.fa-crown
+                    h6.text-muted En Çok Satan Ürün
+                    h3.mb-0.text-truncate(title=bestSellingProduct)= bestSellingProduct
+
+  style.
+    @media (max-width: 768px) {
+      .sticky-top {
+        position: static !important;
+      }
+      .table > :not(caption) > * > * {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+    
+    .badge {
+      padding: 0.5em 0.8em;
+    }
+    
+    .table-responsive {
+      min-height: 200px;
+    }
+    
+    .list-group-item-action:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .card {
+      border: none;
+    }
+
+  script.
+    function getStatusColor(status) {
+      const colors = {
+        'Bekliyor': 'warning',
+        'Hazırlanıyor': 'info',
+        'Kargoda': 'primary',
+        'Tamamlandı': 'success',
+        'İptal': 'danger'
+      };
+      return colors[status] || 'secondary';
+    }
+    
+    function deleteProduct(id) {
+      if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+        window.location.href = `/product/${id}/delete`;
+      }
+    }
+    
+    // Mobile sidebar toggle
+    document.getElementById('toggleSidebar')?.addEventListener('click', function() {
+      const sidebar = document.querySelector('.sticky-top');
+      sidebar.classList.toggle('d-none');
+    });

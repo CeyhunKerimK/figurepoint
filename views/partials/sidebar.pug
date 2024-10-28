@@ -1,0 +1,251 @@
+// Toggle Button
+button#sidebarToggle.btn.btn-light.rounded-circle.shadow-sm.d-md-none(
+  type="button"
+  aria-label="Toggle Sidebar"
+  style="position: fixed; top: 1rem; left: 1rem; z-index: 1040; width: 42px; height: 42px;"
+)
+  i.fas.fa-bars
+
+// Sidebar
+nav#sidebar.custom-sidebar.bg-white.shadow-sm.border-end
+  // Header & Search
+  .sidebar-header.p-3.border-bottom
+    .d-flex.flex-column.gap-3
+      a.navbar-brand.d-flex.align-items-center(href='/admin/dashboard')
+        .brand-icon.bg-primary.text-white.rounded.p-2.me-2
+          i.fas.fa-tachometer-alt
+        span.fw-bold Dashboard
+      
+      .search-box
+        .input-group
+          span.input-group-text.border-end-0.bg-light
+            i.fas.fa-search.text-muted
+          input#dynamicSearch.form-control.border-start-0.bg-light(
+            type="search"
+            placeholder="Hızlı Arama..."
+          )
+
+  // Navigation Menu
+  .sidebar-body.py-2.px-3
+    if user
+      - var userRoles = user.roles || [user.role] || []
+      
+      ul.nav.flex-column.gap-1
+        // Ana Sayfa
+        li.nav-item
+          a.nav-link.d-flex.align-items-center.rounded.py-2(href='/')
+            i.fas.fa-home.me-3.text-primary
+            span Ana Sayfa
+
+        // Admin Menüleri
+        if userRoles.some(role => ['admin', 'moderator'].includes(role))
+          li.nav-item.menu-item
+            a.nav-link.d-flex.align-items-center.justify-content-between.rounded.py-2(
+              data-bs-toggle="collapse"
+              href="#userMenu"
+            )
+              .d-flex.align-items-center
+                i.fas.fa-users.me-3.text-primary
+                span Kullanıcılar
+              i.fas.fa-chevron-right.small
+            
+            .collapse#userMenu
+              ul.nav.flex-column.ms-3.mt-2
+                li.nav-item
+                  a.nav-link.py-2(href='/user/list')
+                    i.fas.fa-list.me-2.text-muted
+                    span Liste
+                li.nav-item
+                  a.nav-link.py-2(href='/user/create')
+                    i.fas.fa-user-plus.me-2.text-muted
+                    span Yeni Ekle
+                if userRoles.includes('admin')
+                  li.nav-item
+                    a.nav-link.py-2(href='/user/assign-role')
+                      i.fas.fa-user-tag.me-2.text-muted
+                      span Rol Atama
+
+        // Ürün Menüleri
+        if userRoles.some(role => ['admin', 'seller'].includes(role))
+          li.nav-item.menu-item
+            a.nav-link.d-flex.align-items-center.justify-content-between.rounded.py-2(
+              data-bs-toggle="collapse"
+              href="#productMenu"
+            )
+              .d-flex.align-items-center
+                i.fas.fa-box.me-3.text-primary
+                span Ürünler
+              i.fas.fa-chevron-right.small
+            
+            .collapse#productMenu
+              ul.nav.flex-column.ms-3.mt-2
+                li.nav-item
+                  a.nav-link.py-2(href='/product/list')
+                    i.fas.fa-list.me-2.text-muted
+                    span Ürün Listesi
+                li.nav-item
+                  a.nav-link.py-2(href='/product/create')
+                    i.fas.fa-plus.me-2.text-muted
+                    span Yeni Ürün
+                li.nav-item
+                  a.nav-link.py-2(href='/product/categories')
+                    i.fas.fa-tags.me-2.text-muted
+                    span Kategoriler
+
+        // Diğer Menüler
+        li.nav-item
+          a.nav-link.d-flex.align-items-center.rounded.py-2(href='/order/list')
+            i.fas.fa-shopping-cart.me-3.text-primary
+            span Siparişler
+        
+        if userRoles.includes('admin')
+          li.nav-item
+            a.nav-link.d-flex.align-items-center.rounded.py-2(href='/reports')
+              i.fas.fa-chart-bar.me-3.text-primary
+              span Raporlar
+        
+        li.nav-item
+          a.nav-link.d-flex.align-items-center.rounded.py-2(href='/settings')
+            i.fas.fa-cog.me-3.text-primary
+            span Ayarlar
+
+  // User Profile Section
+  .sidebar-footer.mt-auto.p-3.border-top
+    if user
+      .d-flex.align-items-center.p-2.rounded.bg-light
+        if user.image_url
+          img.rounded-circle.me-2(
+            src=user.image_url
+            alt=user.name
+            style="width: 42px; height: 42px; object-fit: cover;"
+          )
+        else
+          .rounded-circle.bg-primary.text-white.d-flex.align-items-center.justify-content-center.me-2(
+            style="width: 42px; height: 42px;"
+          )
+            = user.name.charAt(0).toUpperCase()
+        
+        .flex-grow-1.min-width-0
+          .text-truncate.fw-medium= user.name
+          .text-truncate.small.text-muted= user.email
+        
+        .dropdown
+          button.btn.btn-link.text-muted.p-0(
+            type="button"
+            data-bs-toggle="dropdown"
+          )
+            i.fas.fa-ellipsis-v
+          ul.dropdown-menu.dropdown-menu-end
+            li
+              a.dropdown-item(href='/user/'+user.id)
+                i.fas.fa-user.me-2.text-primary
+                | Profil
+            li
+              a.dropdown-item(href='/settings')
+                i.fas.fa-cog.me-2.text-primary
+                | Ayarlar
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item.text-danger(href='/user/logout')
+                i.fas.fa-sign-out-alt.me-2
+                | Çıkış
+    else
+      .d-grid.gap-2
+        a.btn.btn-primary(href='/user/login')
+          i.fas.fa-sign-in-alt.me-2
+          | Giriş
+        a.btn.btn-outline-secondary(href='/user/register')
+          i.fas.fa-user-plus.me-2
+          | Kayıt Ol
+
+  style.
+    #sidebar {
+      width: 280px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1030;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    .nav-link {
+      color: #6c757d;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: var(--bs-primary);
+      background-color: #f8f9fa;
+    }
+    
+    .menu-item .nav-link[aria-expanded="true"] .fa-chevron-right {
+      transform: rotate(90deg);
+    }
+    
+    .fa-chevron-right {
+      transition: transform 0.3s ease;
+    }
+    
+    @media (max-width: 767.98px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+      
+      #sidebar.active {
+        transform: translateX(0);
+      }
+      
+      body {
+        padding-left: 0 !important;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      body {
+        padding-left: 280px;
+      }
+      
+      #sidebarToggle {
+        display: none;
+      }
+    }
+
+  script.
+    // Sidebar Toggle
+    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+    });
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebarToggle');
+      
+      if (window.innerWidth < 768 && 
+          !sidebar.contains(e.target) && 
+          !toggle.contains(e.target) &&
+          sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+      }
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('dynamicSearch');
+    let searchTimeout;
+
+    searchInput?.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        console.log('Searching for:', this.value);
+        // Implement your search logic here
+      }, 300);
+    });

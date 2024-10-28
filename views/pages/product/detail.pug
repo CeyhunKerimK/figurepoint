@@ -1,0 +1,238 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    // Breadcrumb
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb.bg-transparent.p-0
+        li.breadcrumb-item
+          a.text-decoration-none(href="/") Anasayfa
+        li.breadcrumb-item
+          a.text-decoration-none(href="/products") Ürünler
+        li.breadcrumb-item.active= product.name
+
+    .card.border-0.shadow-sm
+      .row.g-0
+        // Ürün Görseli
+        .col-lg-6
+          .product-gallery.p-4
+            .main-image.position-relative.mb-3
+              if product.image_url
+                img.img-fluid.rounded#mainImage(
+                  src=product.image_url
+                  alt=product.name
+                  style="object-fit: contain; width: 100%; height: 500px;"
+                )
+                .zoom-overlay.position-absolute.top-0.end-0.m-3
+                  button.btn.btn-light.rounded-circle.shadow-sm(onclick="toggleZoom()")
+                    i.fas.fa-search-plus
+              else
+                .default-image.bg-light.rounded.d-flex.align-items-center.justify-content-center(
+                  style="height: 500px;"
+                )
+                  i.fas.fa-image.fa-3x.text-muted
+
+        // Ürün Bilgileri
+        .col-lg-6
+          .card-body.p-4
+            // Üst Kısım
+            .product-header.mb-4
+              .d-flex.justify-content-between.align-items-start
+                div
+                  h1.display-6.fw-bold.mb-2= product.name
+                  .text-muted.mb-3
+                    i.fas.fa-building.me-2
+                    span= product.brand || 'Marka Belirtilmemiş'
+                .d-flex.gap-2
+                  button.btn.btn-outline-primary.rounded-circle#likeBtn(
+                    data-product-id=product.id
+                  )
+                    i.fas.fa-thumbs-up
+                  button.btn.btn-outline-warning.rounded-circle#wishlistBtn(
+                    data-product-id=product.id
+                  )
+                    i.fas.fa-heart
+
+            // Fiyat ve Stok Bilgisi
+            .product-info.mb-4
+              .row.g-3
+                .col-6
+                  .price-card.bg-light.rounded.p-3
+                    small.text-muted.d-block Fiyat
+                    .h2.mb-0.text-primary.fw-bold
+                      | #{product.price.toLocaleString('tr-TR')} ₺
+                .col-6
+                  .stock-card.bg-light.rounded.p-3
+                    small.text-muted.d-block Stok Durumu
+                    if product.stock > 0
+                      .text-success.fw-bold
+                        i.fas.fa-check-circle.me-2
+                        | #{product.stock} adet
+                    else
+                      .text-danger.fw-bold
+                        i.fas.fa-times-circle.me-2
+                        | Stokta Yok
+
+            // Ürün Detayları
+            .product-details.mb-4
+              h5.fw-bold.mb-3
+                i.fas.fa-info-circle.me-2
+                | Ürün Detayları
+              .bg-light.rounded.p-3
+                p.mb-0= product.description
+
+            // Teknik Özellikler (varsa)
+            if product.specifications
+              .product-specs.mb-4
+                h5.fw-bold.mb-3
+                  i.fas.fa-cogs.me-2
+                  | Teknik Özellikler
+                .bg-light.rounded.p-3
+                  .row.g-2
+                    each spec, key in product.specifications
+                      .col-6
+                        .spec-item
+                          small.text-muted= key
+                          .fw-medium= spec
+
+            // Alt Kısım - Butonlar
+            .mt-auto
+              .d-flex.flex-wrap.justify-content-between.gap-2
+                if user && (user.role === 'seller' || user.role === 'admin')
+                  .btn-group
+                    a.btn.btn-primary(href=`/product/${product.id}/edit`)
+                      i.fas.fa-edit.me-2
+                      | Düzenle
+                    a.btn.btn-danger(
+                      href="javascript:void(0)"
+                      onclick=`confirmDelete('${product.id}')`
+                    )
+                      i.fas.fa-trash-alt.me-2
+                      | Sil
+                a.btn.btn-outline-secondary(href="/")
+                  i.fas.fa-arrow-left.me-2
+                  | Geri Dön
+
+  style.
+    .product-gallery {
+      position: relative;
+      background: #fff;
+    }
+    
+    .zoom-overlay {
+      z-index: 10;
+    }
+    
+    .price-card, .stock-card {
+      transition: all 0.3s ease;
+    }
+    
+    .price-card:hover, .stock-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn {
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .spec-item {
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      background: white;
+    }
+    
+    @media (max-width: 992px) {
+      .product-gallery {
+        margin-bottom: 2rem;
+      }
+    }
+
+  script.
+    // Zoom functionality
+    function toggleZoom() {
+      const mainImage = document.getElementById('mainImage');
+      mainImage.classList.toggle('zoomed');
+      
+      if (mainImage.classList.contains('zoomed')) {
+        mainImage.style.cursor = 'zoom-out';
+        mainImage.style.transform = 'scale(1.5)';
+      } else {
+        mainImage.style.cursor = 'zoom-in';
+        mainImage.style.transform = 'scale(1)';
+      }
+    }
+
+    // Delete confirmation
+    function confirmDelete(productId) {
+      Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ürünü silmek istediğinizden emin misiniz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = `/product/${productId}/delete`;
+        }
+      });
+    }
+
+    // Like & Wishlist functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const likeBtn = document.getElementById('likeBtn');
+      const wishlistBtn = document.getElementById('wishlistBtn');
+
+      if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+          const productId = this.dataset.productId;
+          handleLike(productId, this);
+        });
+      }
+
+      if (wishlistBtn) {
+        wishlistBtn.addEventListener('click', function() {
+          const productId = this.dataset.productId;
+          handleWishlist(productId, this);
+        });
+      }
+    });
+
+    function handleLike(productId, button) {
+      fetch(`/product/${productId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          button.classList.toggle('active');
+          // Animasyon ekle
+          button.classList.add('animate__animated', 'animate__heartBeat');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    function handleWishlist(productId, button) {
+      fetch(`/product/${productId}/wishlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          button.classList.toggle('active');
+          // Animasyon ekle
+          button.classList.add('animate__animated', 'animate__heartBeat');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }

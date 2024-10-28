@@ -1,0 +1,211 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    // Header
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h2.mb-0= title
+      a.btn.btn-outline-secondary(href='/customer/list')
+        i.fas.fa-arrow-left.me-2
+        | Müşteri Listesine Dön
+
+    if error
+      .alert.alert-danger.alert-dismissible.fade.show
+        button.btn-close(data-bs-dismiss="alert")
+        i.fas.fa-exclamation-circle.me-2
+        = error
+
+    form(action=`/user/${customer.id}/edit` method='POST' enctype="multipart/form-data")
+      .row.g-4
+        // Ana Bilgiler
+        .col-lg-8
+          .card.border-0.shadow-sm
+            .card-header.bg-white.py-3
+              h5.card-title.mb-0 
+                i.fas.fa-user.me-2
+                | Kişisel Bilgiler
+            
+            .card-body
+              .row.g-3
+                .col-md-6
+                  .form-floating.mb-3
+                    input#name.form-control(
+                      type='text'
+                      name='name'
+                      value=customer.name
+                      required
+                      placeholder="İsim"
+                    )
+                    label(for='name') İsim
+                
+                .col-md-6
+                  .form-floating.mb-3
+                    input#email.form-control(
+                      type='email'
+                      name='email'
+                      value=customer.email
+                      required
+                      placeholder="E-posta"
+                    )
+                    label(for='email') E-posta
+                
+                .col-md-6
+                  .form-floating.mb-3
+                    input#phone.form-control(
+                      type='tel'
+                      name='phone'
+                      value=customer.phone
+                      placeholder="Telefon"
+                    )
+                    label(for='phone') Telefon
+                
+                .col-md-6
+                  .form-floating.mb-3
+                    input#dateOfBirth.form-control(
+                      type='date'
+                      name='dateOfBirth'
+                      value=customer.date_of_birth
+                      placeholder="Doğum Tarihi"
+                    )
+                    label(for='dateOfBirth') Doğum Tarihi
+                
+                .col-12
+                  .form-floating.mb-3
+                    textarea#address.form-control(
+                      name='address'
+                      style="height: 100px"
+                      placeholder="Adres"
+                    )= customer.address
+                    label(for='address') Adres
+                
+                .col-md-4
+                  .form-floating.mb-3
+                    input#city.form-control(
+                      type='text'
+                      name='city'
+                      value=customer.city
+                      placeholder="Şehir"
+                    )
+                    label(for='city') Şehir
+                
+                .col-md-4
+                  .form-floating.mb-3
+                    input#country.form-control(
+                      type='text'
+                      name='country'
+                      value=customer.country
+                      placeholder="Ülke"
+                    )
+                    label(for='country') Ülke
+                
+                .col-md-4
+                  .form-floating.mb-3
+                    input#postalCode.form-control(
+                      type='text'
+                      name='postalCode'
+                      value=customer.postalCode
+                      placeholder="Posta Kodu"
+                    )
+                    label(for='postalCode') Posta Kodu
+                
+                .col-12
+                  .form-floating.mb-3
+                    select#gender.form-select(
+                      name='gender'
+                      placeholder="Cinsiyet"
+                    )
+                      option(value='') Seçiniz...
+                      option(value='male' selected=customer.gender === 'male') Erkek
+                      option(value='female' selected=customer.gender === 'female') Kadın
+                      option(value='other' selected=customer.gender === 'other') Diğer
+                    label(for='gender') Cinsiyet
+
+        // Profil Resmi
+        .col-lg-4
+          .card.border-0.shadow-sm
+            .card-header.bg-white.py-3
+              h5.card-title.mb-0
+                i.fas.fa-image.me-2
+                | Profil Resmi
+            
+            .card-body.text-center
+              if customer.image_url
+                .position-relative.mb-4
+                  img.img-thumbnail.rounded-circle(
+                    src=customer.image_url
+                    alt='Mevcut Profil Resmi'
+                    style='width: 200px; height: 200px; object-fit: cover;'
+                  )
+                  .form-check.mt-2
+                    input#removeImage.form-check-input(
+                      type='checkbox'
+                      name='removeImage'
+                    )
+                    label.form-check-label(for='removeImage') Mevcut resmi kaldır
+              else
+                .rounded-circle.bg-light.d-flex.align-items-center.justify-content-center.mx-auto.mb-4(
+                  style="width: 200px; height: 200px;"
+                )
+                  i.fas.fa-user.fa-4x.text-secondary
+              
+              .input-group
+                input#image.form-control(
+                  type='file'
+                  name='image'
+                  accept='image/*'
+                )
+      
+      // Form Butonları
+      .d-flex.justify-content-end.gap-2.mt-4
+        button.btn.btn-primary.btn-lg(type='submit')
+          i.fas.fa-save.me-2
+          | Güncelle
+        a.btn.btn-outline-secondary.btn-lg(href='/customer/list')
+          i.fas.fa-times.me-2
+          | İptal
+
+  style.
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+      height: calc(3.5rem + 2px);
+      line-height: 1.25;
+    }
+    
+    .form-floating > textarea.form-control {
+      height: 100px;
+    }
+    
+    .form-floating > label {
+      padding: 1rem 0.75rem;
+    }
+    
+    .card {
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    
+    @media (max-width: 768px) {
+      .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
+    }
+
+  script.
+    // Dosya seçildiğinde önizleme göster
+    document.getElementById('image').addEventListener('change', function(e) {
+      if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.querySelector('.rounded-circle');
+          if (img) {
+            img.src = e.target.result;
+          }
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });

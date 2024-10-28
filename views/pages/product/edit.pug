@@ -1,0 +1,238 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    // Breadcrumb
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb.bg-transparent.p-0.mb-4
+        li.breadcrumb-item
+          a.text-decoration-none(href="/") Anasayfa
+        li.breadcrumb-item
+          a.text-decoration-none(href="/products") Ürünler
+        li.breadcrumb-item.active= product.name
+
+    .card.border-0.shadow-sm
+      .row.g-0
+        // Ürün Görseli
+        .col-lg-6
+          .product-gallery.p-3
+            .main-image.position-relative.rounded.overflow-hidden.mb-3
+              if product.image_url
+                img#mainImage.img-fluid.w-100(
+                  src=product.image_url
+                  alt=product.name
+                  style="object-fit: contain; height: 500px;"
+                )
+                .zoom-controls.position-absolute.top-0.end-0.m-3
+                  button.btn.btn-light.rounded-circle.shadow-sm(
+                    onclick="toggleZoom()"
+                  )
+                    i.fas.fa-search-plus
+              else
+                .default-image.bg-light.d-flex.align-items-center.justify-content-center(
+                  style="height: 500px;"
+                )
+                  i.fas.fa-image.fa-3x.text-muted
+
+        // Ürün Bilgileri
+        .col-lg-6
+          .card-body.p-4
+            // Üst Kısım - Başlık ve Fiyat
+            .product-header.mb-4
+              .d-flex.justify-content-between.align-items-start
+                div
+                  h1.display-6.fw-bold.mb-2= product.name
+                  .text-muted.mb-3
+                    if product.seller
+                      span Satıcı: 
+                      a.text-decoration-none(href=`/seller/${product.seller.id}`)
+                        = product.seller.name
+
+                // Quick Actions
+                .d-flex.gap-2
+                  button.btn.btn-outline-primary.rounded-circle#likeBtn(
+                    data-product-id=product.id
+                  )
+                    i.fas.fa-thumbs-up
+                  button.btn.btn-outline-warning.rounded-circle#wishlistBtn(
+                    data-product-id=product.id
+                  )
+                    i.fas.fa-heart
+
+            // Fiyat ve Stok Bilgisi
+            .product-info.mb-4
+              .row.g-3
+                .col-sm-6
+                  .price-card.bg-light.rounded.p-3
+                    small.text-muted.d-block Fiyat
+                    .d-flex.align-items-center
+                      if product.is_on_sale
+                        .me-2
+                          del.text-muted #{product.original_price} TL
+                        .h3.mb-0.text-danger #{product.price} TL
+                      else
+                        .h3.mb-0.text-primary #{product.price} TL
+                .col-sm-6
+                  .stock-card.bg-light.rounded.p-3
+                    small.text-muted.d-block Stok Durumu
+                    if product.stock > 0
+                      .text-success
+                        i.fas.fa-check-circle.me-2
+                        | #{product.stock} adet mevcut
+                    else
+                      .text-danger
+                        i.fas.fa-times-circle.me-2
+                        | Stokta Yok
+
+            // Ürün Açıklaması
+            .product-description.mb-4
+              h5.fw-bold.mb-3
+                i.fas.fa-info-circle.me-2
+                | Ürün Açıklaması
+              .bg-light.rounded.p-3
+                p.mb-0= product.description
+
+            // Satın Alma Formu
+            if user && user.role === 'customer' && product.stock > 0
+              form#purchaseForm.mt-4(action="/order/create" method="POST")
+                input(type="hidden" name="productId" value=product.id)
+                .mb-4
+                  label.form-label.fw-bold(for="quantity") Miktar Seçin
+                  .input-group
+                    button.btn.btn-outline-secondary(
+                      type="button"
+                      onclick="updateQuantity(-1)"
+                    )
+                      i.fas.fa-minus
+                    input#quantity.form-control.text-center(
+                      type="number"
+                      name="quantity"
+                      value="1"
+                      min="1"
+                      max=product.stock
+                      required
+                    )
+                    button.btn.btn-outline-secondary(
+                      type="button"
+                      onclick="updateQuantity(1)"
+                    )
+                      i.fas.fa-plus
+
+                .d-grid.gap-2
+                  button.btn.btn-primary.py-2(type="submit")
+                    i.fas.fa-shopping-cart.me-2
+                    | Sepete Ekle
+                  button.btn.btn-outline-primary.py-2(type="button")
+                    i.fas.fa-heart.me-2
+                    | İstek Listesine Ekle
+
+            // Admin/Satıcı Butonları
+            else if user && (user.role === 'admin' || user.role === 'seller')
+              .d-flex.gap-2.mt-4
+                a.btn.btn-outline-primary(href=`/product/${product.id}/edit`)
+                  i.fas.fa-edit.me-2
+                  | Düzenle
+                button.btn.btn-outline-danger(onclick=`deleteProduct('${product.id}')`)
+                  i.fas.fa-trash-alt.me-2
+                  | Sil
+
+            // Geri Dön Butonu
+            .mt-4
+              a.btn.btn-outline-secondary(href="/products")
+                i.fas.fa-arrow-left.me-2
+                | Ürün Listesine Dön
+
+  style.
+    .product-gallery img {
+      transition: transform 0.3s ease;
+    }
+    
+    .product-gallery img.zoomed {
+      transform: scale(1.5);
+      cursor: zoom-out;
+    }
+    
+    .btn-outline-primary, .btn-outline-danger {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-danger:hover {
+      transform: translateY(-2px);
+    }
+    
+    .price-card, .stock-card {
+      transition: all 0.3s ease;
+    }
+    
+    .price-card:hover, .stock-card:hover {
+      transform: translateY(-2px);
+    }
+
+  script.
+    // Zoom functionality
+    function toggleZoom() {
+      const mainImage = document.getElementById('mainImage');
+      mainImage.classList.toggle('zoomed');
+    }
+
+    // Quantity update
+    function updateQuantity(change) {
+      const input = document.getElementById('quantity');
+      const newValue = parseInt(input.value) + change;
+      if (newValue >= 1 && newValue <= #{product.stock}) {
+        input.value = newValue;
+      }
+    }
+
+    // Delete confirmation
+    function deleteProduct(productId) {
+      Swal.fire({
+        title: 'Emin misiniz?',
+        text: "Bu ürünü silmek istediğinizden emin misiniz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Evet, Sil',
+        cancelButtonText: 'İptal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = `/product/${productId}/delete`;
+        }
+      });
+    }
+
+    // Form validation
+    document.getElementById('purchaseForm')?.addEventListener('submit', function(e) {
+      const quantity = document.getElementById('quantity');
+      if (quantity.value < 1 || quantity.value > #{product.stock}) {
+        e.preventDefault();
+        Swal.fire(
+          'Hata!',
+          'Geçerli bir miktar giriniz.',
+          'error'
+        );
+      }
+    });
+
+    // Like & Wishlist functionality
+    ['likeBtn', 'wishlistBtn'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', function() {
+        const productId = this.dataset.productId;
+        const endpoint = id === 'likeBtn' ? 'like' : 'wishlist';
+        
+        fetch(`/api/product/${productId}/${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.classList.toggle('active');
+            // Add animation
+            this.classList.add('animate__animated', 'animate__heartBeat');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+      });
+    });

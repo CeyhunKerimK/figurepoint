@@ -1,0 +1,176 @@
+extends ../../layout
+
+block content      
+  .container-fluid.py-4
+    // Header Section
+    .row.mb-4
+      .col-12
+        .card.bg-primary.text-white.shadow-sm
+          .card-body
+            h1.display-6.text-center.mb-0 Admin Dashboard
+    
+    // Stats Cards
+    .row.g-4.mb-4
+      .col-md-4
+        .card.shadow-sm.h-100.border-0.hover-shadow
+          .card-body
+            .d-flex.align-items-center
+              .flex-shrink-0.rounded-circle.bg-primary.bg-opacity-10.p-3.me-3
+                i.fas.fa-users.fa-2x.text-primary
+              .flex-grow-1
+                h6.text-muted.mb-1 Toplam Kullanıcı
+                h3.mb-0 #{userCount}
+                small.text-success
+                  i.fas.fa-arrow-up.me-1
+                  | %12 artış
+      
+      .col-md-4
+        .card.shadow-sm.h-100.border-0.hover-shadow
+          .card-body
+            .d-flex.align-items-center
+              .flex-shrink-0.rounded-circle.bg-warning.bg-opacity-10.p-3.me-3
+                i.fas.fa-box.fa-2x.text-warning
+              .flex-grow-1
+                h6.text-muted.mb-1 Toplam Ürün
+                h3.mb-0 #{productCount}
+                small.text-success
+                  i.fas.fa-arrow-up.me-1
+                  | %8 artış
+      
+      .col-md-4
+        .card.shadow-sm.h-100.border-0.hover-shadow
+          .card-body
+            .d-flex.align-items-center
+              .flex-shrink-0.rounded-circle.bg-success.bg-opacity-10.p-3.me-3
+                i.fas.fa-shopping-cart.fa-2x.text-success
+              .flex-grow-1
+                h6.text-muted.mb-1 Toplam Sipariş
+                h3.mb-0 #{orderCount}
+                small.text-danger
+                  i.fas.fa-arrow-down.me-1
+                  | %3 düşüş
+
+    // Charts Section
+    .row.mb-4
+      .col-12
+        .card.shadow-sm.border-0
+          .card-header.bg-white
+            h5.card-title.mb-0 İstatistik Grafikleri
+          .card-body
+            .row.g-4
+              .col-md-4
+                .chart-container.position-relative(style="height: 300px")
+                  canvas#userChart
+              .col-md-4
+                .chart-container.position-relative(style="height: 300px")
+                  canvas#productChart
+              .col-md-4
+                .chart-container.position-relative(style="height: 300px")
+                  canvas#orderChart
+
+  style.
+    .hover-shadow {
+      transition: all 0.3s ease;
+    }
+    
+    .hover-shadow:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    
+    .chart-container {
+      margin: auto;
+      max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+      .chart-container {
+        height: 250px !important;
+        margin-bottom: 2rem;
+      }
+    }
+
+  script(src='https://cdn.jsdelivr.net/npm/chart.js')
+  script.
+    const chartData = #{JSON.stringify(chartData)};
+
+    // Ortak chart options
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '75%',
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    };
+
+    // Animasyon fonksiyonu
+    function createAnimatedChart(ctx, data, color, label) {
+      return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [label, ''],
+          datasets: [{
+            data: [data, 100 - data],
+            backgroundColor: [color, '#f1f1f1'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          ...commonOptions,
+          plugins: {
+            ...commonOptions.plugins,
+            title: {
+              display: true,
+              text: label,
+              padding: {
+                top: 10,
+                bottom: 10
+              },
+              font: {
+                size: 16,
+                weight: 'normal'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Chart'ları oluştur
+    document.addEventListener('DOMContentLoaded', () => {
+      // Kullanıcı Chart
+      createAnimatedChart(
+        document.getElementById('userChart').getContext('2d'),
+        (chartData.userCount / 100) * 100,
+        'rgba(54, 162, 235, 0.8)',
+        'Kullanıcılar'
+      );
+
+      // Ürün Chart
+      createAnimatedChart(
+        document.getElementById('productChart').getContext('2d'),
+        (chartData.productCount / 100) * 100,
+        'rgba(255, 206, 86, 0.8)',
+        'Ürünler'
+      );
+
+      // Sipariş Chart
+      createAnimatedChart(
+        document.getElementById('orderChart').getContext('2d'),
+        (chartData.orderCount / 100) * 100,
+        'rgba(75, 192, 192, 0.8)',
+        'Siparişler'
+      );
+    });
+
+    // Responsive davranış için
+    window.addEventListener('resize', () => {
+      Chart.instances.forEach(chart => {
+        chart.resize();
+      });
+    });
+
+  script(src="https://kit.fontawesome.com/your-fontawesome-kit.js")

@@ -1,0 +1,205 @@
+extends ../layout
+
+block content
+  .container-fluid.py-4
+    // Header Section
+    .row.mb-4
+      .col-12
+        .d-flex.flex-wrap.justify-content-between.align-items-center
+          h2.mb-0.fw-bold
+            i.fas.fa-store.me-2.text-primary
+            | Ürünlerimiz
+          .d-flex.gap-2.align-items-center
+            .input-group.w-auto
+              span.input-group-text.bg-light
+                i.fas.fa-search.text-primary
+              input#searchInput.form-control(
+                type="search"
+                placeholder="Ürün ara..."
+                aria-label="Ürün ara"
+              )
+            select#sortSelect.form-select.w-auto
+              option(value="featured") Öne Çıkanlar
+              option(value="price-asc") Fiyat (Düşükten Yükseğe)
+              option(value="price-desc") Fiyat (Yüksekten Düşüğe)
+              option(value="name-asc") İsim (A-Z)
+              option(value="name-desc") İsim (Z-A)
+
+    // Products Grid
+    .row.g-4#productList
+      each product in products
+        .col-sm-6.col-md-4.col-lg-3
+          .card.h-100.border-0.shadow-hover.product-card
+            .card-header.position-relative.p-0.border-0
+              img.card-img-top(
+                src=product.image_url || "/img/default-product.jpg",
+                alt=product.name,
+                loading="lazy"
+              )
+              .product-actions.position-absolute.top-0.end-0.m-2
+                button.btn.btn-light.rounded-circle.shadow-sm.me-2.like-btn(
+                  data-product-id=product.id,
+                  data-bs-toggle="tooltip",
+                  title="Beğen"
+                )
+                  i.fas.fa-thumbs-up
+                  span.badge.bg-primary.ms-1 #{product.likes || 0}
+                button.btn.btn-light.rounded-circle.shadow-sm.wishlist-btn(
+                  data-product-id=product.id,
+                  data-bs-toggle="tooltip",
+                  title="İstek Listesine Ekle"
+                )
+                  i.fas.fa-heart
+            
+            .card-body.d-flex.flex-column.p-3
+              h5.card-title.mb-2.text-truncate= product.name
+              p.card-text.small.text-muted.mb-3
+                = product.description ? product.description.substring(0, 80) + (product.description.length > 80 ? '...' : '') : 'Açıklama yok'
+              
+              .mt-auto
+                .d-flex.justify-content-between.align-items-center.mb-3
+                  .price-tag
+                    span.text-muted.small Fiyat
+                    .fw-bold.text-primary #{product.price.toLocaleString('tr-TR')} ₺
+                  if product.stock > 0
+                    span.badge.bg-success.rounded-pill Stokta
+                  else
+                    span.badge.bg-danger.rounded-pill Tükendi
+                
+                a.btn.btn-primary.w-100(href=`/product/${product.id}`)
+                  i.fas.fa-info-circle.me-2
+                  | Ürün Detayı
+
+  style.
+    .product-card {
+      transition: all 0.3s ease;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    
+    .shadow-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .shadow-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    
+    .card-img-top {
+      height: 250px;
+      object-fit: cover;
+      transition: all 0.3s ease;
+    }
+    
+    .product-card:hover .card-img-top {
+      transform: scale(1.05);
+    }
+    
+    .product-actions {
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .product-card:hover .product-actions {
+      opacity: 1;
+    }
+    
+    .btn-light {
+      background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .btn-light:hover {
+      background: white;
+    }
+    
+    .like-btn.active,
+    .wishlist-btn.active {
+      background-color: #4e73df;
+      color: white;
+    }
+    
+    .price-tag {
+      line-height: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .product-actions {
+        opacity: 1;
+      }
+      
+      .card-img-top {
+        height: 200px;
+      }
+    }
+
+  script.
+    (function() {
+      function init() {
+        // Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+
+        if (searchInput) {
+          searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => handleSearch(this.value), 300);
+          });
+        }
+
+        // Sort functionality
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+          sortSelect.addEventListener('change', function() {
+            handleSort(this.value);
+          });
+        }
+
+        // Like & Wishlist functionality
+        attachButtonListeners();
+      }
+
+      function handleSearch(term) {
+        fetch(`/product/search?term=${encodeURIComponent(term)}`)
+          .then(response => response.json())
+          .then(updateProductList)
+          .catch(err => console.error('Arama hatası:', err));
+      }
+
+      function handleSort(sortType) {
+        const productList = document.getElementById('productList');
+        const products = Array.from(productList.children);
+        
+        products.sort((a, b) => {
+          const priceA = parseFloat(a.querySelector('.price-tag').textContent.replace(/[^\d.]/g, ''));
+          const priceB = parseFloat(b.querySelector('.price-tag').textContent.replace(/[^\d.]/g, ''));
+          const nameA = a.querySelector('.card-title').textContent;
+          const nameB = b.querySelector('.card-title').textContent;
+          
+          switch(sortType) {
+            case 'price-asc': return priceA - priceB;
+            case 'price-desc': return priceB - priceA;
+            case 'name-asc': return nameA.localeCompare(nameB);
+            case 'name-desc': return nameB.localeCompare(nameA);
+            default: return 0;
+          }
+        });
+        
+        products.forEach(product => productList.appendChild(product));
+      }
+
+      // ... Rest of your existing functions (handleLike, handleWishlist, etc.) ...
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();

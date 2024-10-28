@@ -1,0 +1,45 @@
+{
+  "name": "ani-commerce",
+  "version": "1.0.0",
+  "description": "anime figürlerinin ağırlıklı olarak satıldığı bir e-ticaret sitesi",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CeyhunKerimK/ani-commerce.git"
+  },
+  "keywords": [
+    "anime",
+    "figure",
+    "e-commerce",
+    "sale"
+  ],
+  "author": "ceyhun kerim kılıç",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CeyhunKerimK/ani-commerce/issues"
+  },
+  "homepage": "https://github.com/CeyhunKerimK/ani-commerce#readme",
+  "dependencies": {
+    "@google-cloud/storage": "^7.13.0",
+    "ani-commerce": "file:",
+    "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-flash": "^0.0.2",
+    "express-session": "^1.18.0",
+    "googleapis": "^144.0.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.11.3",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.15",
+    "nodemon": "^3.1.4",
+    "pg": "^8.12.0",
+    "postgres": "^3.4.4",
+    "pug": "^3.0.3"
+  }
+}

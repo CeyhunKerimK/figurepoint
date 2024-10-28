@@ -1,0 +1,50 @@
+doctype html
+html
+  head
+    title= title
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
+    link(rel="stylesheet", href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css")
+    link(rel="stylesheet", href="/css/custom.css")
+    link(rel="icon", href="/img/favicon.png", type="image/x-icon")
+    //- script(src="/js/searchScript.js") 
+    script(src="/js/custom.js") 
+    style.
+      .profile-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .nav-icon {
+        margin-right: 5px;
+      }
+  body.d-flex.flex-column.min-vh-100
+    if user 
+      - var userRoles = user.roles || [user.role] || []
+      if userRoles.some(role => ['admin'].includes(role))
+        include ./partials/sidebar
+      else 
+        include ./partials/navbar
+    else 
+      include ./partials/navbar
+    .container.flex-grow-1
+      block content
+
+    footer.bg-light.text-center.text-lg-start.mt-auto        
+      .text-center.p-3(style='background-color: rgba(0, 0, 0, 0.2);')
+        | © 2024 Telif Hakkı: 
+        a.text-dark(href='https://sirket.com/')
+          i.fas.fa-code.nav-icon
+          | Ceyhun Kerim KILIÇ - Web Developer
+
+    script(src="https://code.jquery.com/jquery-3.5.1.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js")
+    script(src='https://code.jquery.com/jquery-3.6.0.min.js')
+    script(src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js')
+    script(src='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js')
+    script(src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    

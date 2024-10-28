@@ -1,0 +1,207 @@
+extends ../../layout
+
+block content
+  .container-fluid.py-4
+    .row.justify-content-center
+      .col-lg-10
+        // Breadcrumb
+        nav(aria-label="breadcrumb")
+          ol.breadcrumb.bg-transparent.p-0.mb-4
+            li.breadcrumb-item
+              a.text-decoration-none(href="/dashboard") Dashboard
+            li.breadcrumb-item
+              a.text-decoration-none(href="/products") Ürünler
+            li.breadcrumb-item.active Yeni Ürün
+
+        .card.border-0.shadow-sm
+          .card-header.bg-gradient.text-white.py-3(style="background-color: #4e73df")
+            .d-flex.justify-content-between.align-items-center
+              h4.mb-0 
+                i.fas.fa-box-open.me-2
+                | Yeni Ürün Oluştur
+              a.btn.btn-light.btn-sm(href="/products")
+                i.fas.fa-arrow-left.me-2
+                | Ürünlere Dön
+
+          .card-body.p-4
+            if error
+              .alert.alert-danger.alert-dismissible.fade.show.mb-4
+                button.btn-close(data-bs-dismiss="alert")
+                i.fas.fa-exclamation-circle.me-2
+                = error
+
+            form#productForm(action="/product/create" method="POST" enctype="multipart/form-data")
+              .row.g-4
+                // Sol Kolon - Temel Bilgiler
+                .col-md-8
+                  .card.bg-light.border-0
+                    .card-body
+                      .row.g-3
+                        .col-md-6
+                          .form-floating
+                            input#name.form-control(
+                              type="text"
+                              name="name"
+                              required
+                              placeholder="Ürün Adı"
+                            )
+                            label(for="name") Ürün Adı
+
+                        .col-md-6
+                          .form-floating
+                            .input-group
+                              span.input-group-text ₺
+                              input#price.form-control(
+                                type="number"
+                                name="price"
+                                step="0.01"
+                                required
+                                placeholder="Fiyat"
+                              )
+                              label(for="price") Fiyat
+
+                        .col-12
+                          .form-floating
+                            textarea#description.form-control(
+                              name="description"
+                              style="height: 120px"
+                              placeholder="Ürün Açıklaması"
+                            )
+                            label(for="description") Ürün Açıklaması
+
+                        .col-md-6
+                          .form-floating
+                            input#stock.form-control(
+                              type="number"
+                              name="stock"
+                              required
+                              min="0"
+                              placeholder="Stok"
+                            )
+                            label(for="stock") Stok Miktarı
+
+                        .col-md-6
+                          .form-floating
+                            select#category_id.form-select(
+                              name="category_id"
+                              required
+                            )
+                              option(value="") Seçiniz...
+                              each category in categories
+                                option(value=category.id)= category.category_name
+                            label(for="category_id") Kategori
+
+                // Sağ Kolon - Resim Yükleme
+                .col-md-4
+                  .card.bg-light.border-0
+                    .card-body.text-center
+                      h5.card-title.mb-3
+                        i.fas.fa-image.me-2
+                        | Ürün Görseli
+                      
+                      #imagePreviewContainer.mb-3
+                        img#imagePreview.img-fluid.rounded.d-none(alt="Ürün Önizleme")
+                      
+                      .upload-area.p-4.rounded.bg-white.mb-3
+                        i.fas.fa-cloud-upload-alt.fa-2x.text-primary.mb-2
+                        input#image.form-control(
+                          type="file"
+                          name="image"
+                          accept="image/*"
+                          style="display: none"
+                        )
+                        button#uploadButton.btn.btn-outline-primary.w-100(type="button")
+                          i.fas.fa-plus.me-2
+                          | Görsel Seç
+                      
+                      small.text-muted Önerilen boyut: 800x600 piksel
+
+              // Form Butonları
+              .d-flex.justify-content-end.gap-2.mt-4
+                button.btn.btn-primary.btn-lg(type="submit")
+                  i.fas.fa-save.me-2
+                  | Ürünü Oluştur
+                a.btn.btn-outline-secondary.btn-lg(href="/products")
+                  i.fas.fa-times.me-2
+                  | İptal
+
+  style.
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+      height: calc(3.5rem + 2px);
+    }
+    
+    .form-floating > textarea.form-control {
+      height: 120px;
+    }
+    
+    .upload-area {
+      border: 2px dashed #dee2e6;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+      border-color: #4e73df;
+    }
+    
+    .card {
+      transition: all 0.3s ease;
+    }
+    
+    #imagePreview {
+      max-height: 200px;
+      width: auto;
+    }
+
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Resim yükleme işlemleri
+      const uploadButton = document.getElementById('uploadButton');
+      const imageInput = document.getElementById('image');
+      const imagePreview = document.getElementById('imagePreview');
+      const uploadArea = document.querySelector('.upload-area');
+
+      uploadButton.addEventListener('click', () => imageInput.click());
+
+      imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.classList.remove('d-none');
+            uploadArea.style.display = 'none';
+          }
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Fiyat alanı için input maskesi
+      const priceInput = document.getElementById('price');
+      priceInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        value = value.replace(/[^0-9.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 1) {
+          parts[1] = parts[1].slice(0, 2);
+          value = parts.join('.');
+        }
+        e.target.value = value;
+      });
+
+      // Form doğrulama
+      const form = document.getElementById('productForm');
+      form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // İlk hatalı alana odaklan
+          const firstInvalid = form.querySelector(':invalid');
+          if (firstInvalid) {
+            firstInvalid.focus();
+          }
+        }
+        form.classList.add('was-validated');
+      });
+    });

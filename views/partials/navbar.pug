@@ -1,0 +1,218 @@
+nav.navbar.navbar-expand-lg.navbar-light.sticky-top.border-bottom
+  .container-fluid
+    // Brand
+    a.navbar-brand.d-flex.align-items-center(href='/')
+      .brand-icon.bg-primary.text-white.rounded-circle.p-2.me-2
+        i.fas.fa-store
+      span.fw-bold E-Ticaret
+
+    // Mobile Toggle
+    button.navbar-toggler.border-0.shadow-none(
+      type='button'
+      data-bs-toggle='collapse'
+      data-bs-target='#navbarNav'
+      aria-controls='navbarNav'
+      aria-expanded='false'
+      aria-label='Toggle navigation'
+    )
+      i.fas.fa-bars
+
+    // Navbar Content
+    .collapse.navbar-collapse#navbarNav
+      // Main Navigation
+      ul.navbar-nav.me-auto.mb-2.mb-lg-0
+        if user
+          - var userRoles = user.roles || [user.role] || []
+
+          if userRoles.some(role => ['admin', 'moderator'].includes(role))
+            li.nav-item.dropdown
+              a.nav-link.dropdown-toggle(
+                href='#'
+                role='button'
+                data-bs-toggle='dropdown'
+                aria-expanded='false'
+              )
+                i.fas.fa-users-cog.me-2
+                | Yönetim
+              ul.dropdown-menu.shadow-sm.border-0
+                li
+                  a.dropdown-item(href='/user/list')
+                    i.fas.fa-users.me-2.text-primary
+                    | Kullanıcılar
+                if userRoles.includes('admin')
+                  li
+                    a.dropdown-item(href='/user/assign-role')
+                      i.fas.fa-user-tag.me-2.text-primary
+                      | Rol Atama
+                li
+                  hr.dropdown-divider
+                li
+                  a.dropdown-item(href='/dashboard')
+                    i.fas.fa-chart-line.me-2.text-primary
+                    | Dashboard
+
+          if userRoles.some(role => ['admin', 'seller'].includes(role))
+            li.nav-item.dropdown
+              a.nav-link.dropdown-toggle(
+                href='#'
+                role='button'
+                data-bs-toggle='dropdown'
+                aria-expanded='false'
+              )
+                i.fas.fa-box.me-2
+                | Ürünler
+              ul.dropdown-menu.shadow-sm.border-0
+                li
+                  a.dropdown-item(href='/product/list')
+                    i.fas.fa-list.me-2.text-primary
+                    | Ürün Listesi
+                li
+                  a.dropdown-item(href='/product/create')
+                    i.fas.fa-plus.me-2.text-primary
+                    | Yeni Ürün
+                if userRoles.includes('seller')
+                  li
+                    hr.dropdown-divider
+                  li
+                    a.dropdown-item(href='/seller/dashboard')
+                      i.fas.fa-store.me-2.text-primary
+                      | Satıcı Paneli
+
+      // Search Form
+      form.d-flex.mx-lg-4.my-2.my-lg-0.flex-grow-1.flex-lg-grow-0(style="max-width: 400px;")
+        .input-group
+          input#dynamicSearchTop.form-control.border-end-0(
+            type="search"
+            placeholder="Ürün, kategori veya marka ara..."
+            aria-label="Search"
+          )
+          button.btn.btn-outline-primary.border-start-0(type="submit")
+            i.fas.fa-search
+
+      // User Navigation
+      ul.navbar-nav.ms-auto
+        if user
+          // Notifications
+          li.nav-item.dropdown.me-2
+            a.nav-link.position-relative(
+              href='#'
+              role='button'
+              data-bs-toggle='dropdown'
+              aria-expanded='false'
+            )
+              i.fas.fa-bell.fa-lg
+              span.position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger 3
+            .dropdown-menu.dropdown-menu-end.shadow-sm.border-0(style="width: 300px;")
+              h6.dropdown-header Bildirimler
+              a.dropdown-item.d-flex.align-items-center.py-2(href='#')
+                .flex-shrink-0.me-2
+                  i.fas.fa-shopping-cart.text-primary
+                .flex-grow-1
+                  .small.text-muted 2 dakika önce
+                  .text-truncate Siparişiniz onaylandı
+              .dropdown-divider
+              a.dropdown-item.text-center.small(href='#') Tüm Bildirimleri Gör
+
+          // User Menu
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle.d-flex.align-items-center(
+              href='#'
+              role='button'
+              data-bs-toggle='dropdown'
+              aria-expanded='false'
+            )
+              if user.image_url
+                img.rounded-circle.me-2(
+                  src=user.image_url
+                  alt=user.name
+                  width='32'
+                  height='32'
+                  style="object-fit: cover;"
+                )
+              else
+                .rounded-circle.bg-primary.text-white.d-flex.align-items-center.justify-content-center.me-2(
+                  style="width: 32px; height: 32px;"
+                )
+                  = user.name.charAt(0).toUpperCase()
+              span.d-none.d-sm-inline= user.name
+            
+            ul.dropdown-menu.dropdown-menu-end.shadow-sm.border-0
+              li
+                a.dropdown-item(href='/user/'+user.id)
+                  i.fas.fa-user.me-2.text-primary
+                  | Profilim
+              li
+                a.dropdown-item(href='/user/settings')
+                  i.fas.fa-cog.me-2.text-primary
+                  | Ayarlar
+              li
+                hr.dropdown-divider
+              li
+                a.dropdown-item.text-danger(href='/user/logout')
+                  i.fas.fa-sign-out-alt.me-2
+                  | Çıkış Yap
+        else
+          li.nav-item
+            a.nav-link.btn.btn-outline-primary.me-2(href='/user/login')
+              i.fas.fa-sign-in-alt.me-2
+              | Giriş
+          li.nav-item
+            a.nav-link.btn.btn-primary(href='/user/register')
+              i.fas.fa-user-plus.me-2
+              | Kayıt Ol
+
+  style.
+    .navbar {
+      backdrop-filter: blur(10px);
+      background-color: rgba(255, 255, 255, 0.95) !important;
+    }
+    
+    .nav-link {
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: var(--bs-primary) !important;
+    }
+    
+    .dropdown-item {
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-item:hover {
+      background-color: #f8f9fa;
+      transform: translateX(5px);
+    }
+    
+    .brand-icon {
+      transition: all 0.3s ease;
+    }
+    
+    .navbar-brand:hover .brand-icon {
+      transform: rotate(15deg);
+    }
+    
+    .input-group {
+      transition: all 0.3s ease;
+    }
+    
+    .input-group:focus-within {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+    
+    @media (max-width: 992px) {
+      .navbar-collapse {
+        padding: 1rem 0;
+      }
+      
+      .dropdown-menu {
+        border: none;
+        background: transparent;
+        padding-left: 1rem;
+      }
+      
+      .nav-link {
+        padding: 0.5rem 0;
+      }
+    }

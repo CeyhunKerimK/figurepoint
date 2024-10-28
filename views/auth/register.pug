@@ -1,0 +1,242 @@
+extends ../layout
+
+block content
+  .min-vh-100.d-flex.align-items-center.py-5(style="background-color: #f8f9fa")
+    .container
+      .row.justify-content-center
+        .col-md-8.col-lg-6
+          // Logo ve Başlık
+          .text-center.mb-4
+            .display-6.fw-bold.text-primary.mb-2
+              i.fas.fa-store.me-2
+              | E-Ticaret
+            p.text-muted Yeni bir hesap oluşturun
+
+          // Register Card
+          .card.border-0.shadow-sm
+            .card-body.p-4
+              if error
+                .alert.alert-danger.d-flex.align-items-center.fade.show
+                  i.fas.fa-exclamation-circle.me-2
+                  = error
+
+              form#registerForm(action="/user/register" method="POST" novalidate)
+                // Ad Soyad
+                .form-floating.mb-3
+                  input#name.form-control(
+                    type="text"
+                    name="name"
+                    placeholder="Ad Soyad"
+                    required
+                    pattern="^[a-zA-ZğüşıöçĞÜŞİÖÇ\\s]{3,}$"
+                    autofocus
+                  )
+                  label(for="name")
+                    i.fas.fa-user.me-2.text-muted
+                    | Ad Soyad
+                  .invalid-feedback En az 3 karakter ve sadece harf kullanın.
+
+                // Email
+                .form-floating.mb-3
+                  input#email.form-control(
+                    type="email"
+                    name="email"
+                    placeholder="name@example.com"
+                    required
+                  )
+                  label(for="email")
+                    i.fas.fa-envelope.me-2.text-muted
+                    | E-posta Adresi
+                  .invalid-feedback Geçerli bir e-posta adresi girin.
+
+                // Password
+                .form-floating.mb-3.position-relative
+                  input#password.form-control(
+                    type="password"
+                    name="password"
+                    placeholder="Şifre"
+                    required
+                    minlength="6"
+                  )
+                  label(for="password")
+                    i.fas.fa-lock.me-2.text-muted
+                    | Şifre
+                  #passwordToggle.position-absolute.end-0.top-50.translate-middle-y.pe-3(
+                    style="cursor: pointer;"
+                  )
+                    i.fas.fa-eye-slash.text-muted
+                  .invalid-feedback Şifre en az 6 karakter olmalıdır.
+
+                // Confirm Password
+                .form-floating.mb-3.position-relative
+                  input#confirmPassword.form-control(
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Şifre Tekrar"
+                    required
+                  )
+                  label(for="confirmPassword")
+                    i.fas.fa-lock.me-2.text-muted
+                    | Şifre Tekrar
+                  #confirmPasswordToggle.position-absolute.end-0.top-50.translate-middle-y.pe-3(
+                    style="cursor: pointer;"
+                  )
+                    i.fas.fa-eye-slash.text-muted
+                  .invalid-feedback Şifreler eşleşmiyor.
+
+                // Terms and Conditions
+                .form-check.mb-4
+                  input#terms.form-check-input(
+                    type="checkbox"
+                    required
+                  )
+                  label.form-check-label.text-muted(for="terms")
+                    | Kullanım şartlarını ve gizlilik politikasını kabul ediyorum.
+                  .invalid-feedback Devam etmek için kabul etmelisiniz.
+
+                // Register Button
+                button.btn.btn-primary.w-100.py-2.mb-4(type="submit")
+                  i.fas.fa-user-plus.me-2
+                  | Kayıt Ol
+
+                // Social Register
+                .text-center
+                  p.text-muted.mb-4 Veya şununla kayıt ol:
+                  .d-flex.justify-content-center.gap-2
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialRegister('google')"
+                    )
+                      i.fab.fa-google
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialRegister('facebook')"
+                    )
+                      i.fab.fa-facebook-f
+                    button.btn.btn-outline-primary.rounded-circle(
+                      type="button"
+                      onclick="socialRegister('apple')"
+                    )
+                      i.fab.fa-apple
+
+          // Login Link
+          .text-center.mt-4
+            p.text-muted.mb-0
+              | Zaten hesabınız var mı? 
+              a.text-decoration-none.fw-medium(href="/user/login")
+                | Giriş Yapın
+
+  style.
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+      height: calc(3.5rem + 2px);
+      line-height: 1.25;
+    }
+    
+    .form-floating > label {
+      padding: 1rem 0.75rem;
+    }
+    
+    .btn-outline-primary {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .card {
+      border-radius: 1rem;
+    }
+    
+    .alert {
+      border-radius: 0.5rem;
+    }
+    
+    .password-strength {
+      height: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1rem;
+      }
+    }
+
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('registerForm');
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirmPassword');
+
+      // Password visibility toggles
+      ['passwordToggle', 'confirmPasswordToggle'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', function() {
+          const input = this.id === 'passwordToggle' ? password : confirmPassword;
+          const icon = this.querySelector('i');
+          
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+          } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+          }
+        });
+      });
+
+      // Real-time password matching validation
+      confirmPassword.addEventListener('input', function() {
+        if (this.value !== password.value) {
+          this.setCustomValidity('Şifreler eşleşmiyor');
+        } else {
+          this.setCustomValidity('');
+        }
+      });
+
+      // Form validation
+      form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        if (password.value !== confirmPassword.value) {
+          confirmPassword.setCustomValidity('Şifreler eşleşmiyor');
+          e.preventDefault();
+        }
+        
+        form.classList.add('was-validated');
+      });
+
+      // Password strength meter
+      password.addEventListener('input', function() {
+        const strength = calculatePasswordStrength(this.value);
+        updatePasswordStrength(strength);
+      });
+    });
+
+    function calculatePasswordStrength(password) {
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (password.match(/[A-Z]/)) strength++;
+      if (password.match(/[0-9]/)) strength++;
+      if (password.match(/[^A-Za-z0-9]/)) strength++;
+      return strength;
+    }
+
+    function updatePasswordStrength(strength) {
+      const colors = ['#dc3545', '#ffc107', '#28a745', '#20c997'];
+      const meter = document.querySelector('.password-strength');
+      if (meter) {
+        meter.style.width = `${(strength / 4) * 100}%`;
+        meter.style.backgroundColor = colors[strength - 1] || '#dc3545';
+      }
+    }
+
+    function socialRegister(provider) {
+      // Implement social registration logic here
+      console.log(`Registering with ${provider}`);
+    }

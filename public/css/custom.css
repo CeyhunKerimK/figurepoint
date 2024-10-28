@@ -1,0 +1,76 @@
+
+.homepage-title{
+    font-size: medium;
+    color: white;
+}
+.frieren{
+    width: 300px;
+    height: 500px;
+    object-fit: contain;
+    margin: 0 auto;
+}
+.customer-list-image{
+    object-fit: cover;
+    height: 75px;
+    width: 75px;
+}
+/* 
+.custom-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    overflow-y: auto;
+    transition: all 0.3s;
+    z-index: 1000;
+  }
+  
+  .custom-sidebar-left {
+    left: 0;
+    right: auto;
+  }
+  
+  .custom-sidebar .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .custom-sidebar .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .custom-sidebar .dropdown-menu {
+    font-size: 0.9rem;
+  }
+  
+  .custom-sidebar .list-unstyled a {
+    font-size: 0.9rem;
+    padding: 0.3rem 1rem;
+    display: block;
+  }
+
+  
+  /* Responsive tasarım için */
+  @media (max-width: 768px) {
+    .custom-sidebar {
+      width: 100%;
+      transform: translateX(-100%);
+    }
+  
+    .custom-sidebar.show {
+      transform: translateX(0);
+    }
+  
+    body {
+      margin-left: 0;
+    }
+  }
+ */
+
+  .card-img-top {
+    transition: transform 0.3s ease-in-out;
+  }
+  .card-img-wrapper:hover .card-img-top {
+    transform: scale(1.1);
+  }
